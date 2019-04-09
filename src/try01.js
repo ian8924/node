@@ -1,2 +1,2 @@
 let func = a => a*a;  
-console.log(func(3));
+console.log(func(8));
