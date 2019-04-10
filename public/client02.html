@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.css">
+    <script src="js/jquery-3.3.1.js"></script>
+    <script src="bootstrap/js/bootstrap.bundle.js"></script>
+    <title>Title</title>
+</head>
+<body>
+
+<div class="container">
+    <form name="form1" method="post" onsubmit="return false;">
+        <input type="text" name="name"><br>
+        <input type="text" name="age"><br>
+        <button type="button" onclick="doPost()">click</button>
+    </form>
+
+
+    <textarea id="output" cols="30" rows="10"></textarea>
+</div>
+
+
+<script>
+    function doPost(){
+        var data = {
+          name: document.form1.name.value,
+          age: document.form1.age.value
+        };
+
+        fetch('/post-echo', {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response=>{
+            return response.json();
+        })
+        .then(obj=>{
+            $('#output').val( JSON.stringify(obj))
+        });
+    }
+
+
+</script>
+</body>
+</html>

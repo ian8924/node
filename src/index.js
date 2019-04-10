@@ -1,18 +1,25 @@
 const express = require('express');
 const exphbs = require('express-handlebars');
 const url = require('url');
-
 const bodyParser = require('body-parser');
-const bodyParserUrlencoded = bodyParser.urlencoded({extended: false});
+
+//const bodyParserUrlencoded = bodyParser.urlencoded({extended: false});
 
 const app = express();
 app.use(express.static('public'));
+
+// 查看 HTTP HEADER 的 Content-Type: application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({extended: false}));
+
+// 查看 HTTP HEADER 的 Content-Type: application/json
+app.use(bodyParser.json());
+
 
 app.engine('hbs', exphbs({
     defaultLayout: 'main',
     extname: '.hbs',
     helpers: {
-        list: require('./../helpers/list.js')
+        list: require('./../helpers/list')
     }
 }));
 
@@ -27,16 +34,19 @@ app.get('/', (req, res)=>{
     });
 });
 
+app.get('/sales', (req, res)=>{
+    const sales = require('./../data/sales.json');
+    res.render('sales', {
+        sales: sales
+    });
+});
 
-// app.get('/tr_qs', (req, res)=>{    
-//     const urlParts = url.parse(req.url, true);    
-//     // 取得 QueryString (query屬性)，第二個參數表示要解析成 Object (Null Prototype)    
-//     urlParts.myQuery = JSON.parse(JSON.stringify(urlParts.query));    
-//     console.log(urlParts);    
-//     res.render('try_querystring',{        
-//         urlParts: urlParts    
-//     });
-// });
+app.get('/sales2', (req, res)=>{
+    const sales = require('./../data/sales.json');
+    res.render('sales2', {
+        sales: sales
+    });
+});
 
 app.get('/try-qs', (req, res)=>{
     console.log(req.url);
@@ -47,26 +57,15 @@ app.get('/try-qs', (req, res)=>{
     })
 });
 
-app.post('/post-echo', bodyParserUrlencoded, (req, res)=>{
+app.post('/post-echo', (req, res)=>{
     //res.send( JSON.stringify(req.body));
     res.json(req.body);
 });
 
-app.get('/sales', (req, res)=>{
-    const sales = require('./../data/sales.json');
-    res.render('sales', {
-        // layout: false,
-        sales: sales
-    });
+app.post('/post-echo2', (req, res)=>{
+    res.send(req.body.name);
 });
 
-
-app.get('/sales2', (req, res)=>{
-        const sales = require('./../data/sales.json');    
-        res.render('sales2', {        
-            sales: sales    
-        });
-    });
 
 app.get('/abc.html', (req, res)=>{
     res.send('ABC');
