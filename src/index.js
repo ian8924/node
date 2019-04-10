@@ -2,11 +2,16 @@ const express = require('express');
 const exphbs = require('express-handlebars');
 const url = require('url');
 const bodyParser = require('body-parser');
+const cors = require('cors');
+const multer = require('multer');
 
 //const bodyParserUrlencoded = bodyParser.urlencoded({extended: false});
 
 const app = express();
 app.use(express.static('public'));
+
+
+
 
 // 查看 HTTP HEADER 的 Content-Type: application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({extended: false}));
@@ -14,6 +19,9 @@ app.use(bodyParser.urlencoded({extended: false}));
 // 查看 HTTP HEADER 的 Content-Type: application/json
 app.use(bodyParser.json());
 
+app.use(cors());
+
+const upload=multer({dest:'tmp_uploads/'});
 
 app.engine('hbs', exphbs({
     defaultLayout: 'main',
