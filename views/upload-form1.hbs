@@ -1,0 +1,46 @@
+
+
+<form name="form1" method="post" enctype="multipart/form-data" onsubmit="return false;">
+    <div class="form-group">
+        <label for="">img1</label>
+        <button class="btn btn-primary select-file" data-target="img1">請選擇檔案</button>
+        <img src="" alt="" id="myimg1">
+        <input type="hidden" name="img1" value="">
+        <input type="file" class="form-control filefield" id="img1" style="display: none">
+    </div>
+    <div class="form-group">
+        <label for="">img2</label>
+        <button class="btn btn-primary select-file" data-target="img2">請選擇檔案</button>
+        <img src="" alt="" id="myimg2">
+        <input type="hidden" name="img2" value="">
+        <input type="file" class="form-control filefield" id="img2" style="display: none">
+    </div>
+
+    <div class="form-group">
+        <label for="">img3</label>
+        <button class="btn btn-primary select-file" data-target="img3">請選擇檔案</button>
+        <img src="" alt="" id="myimg3">
+        <input type="hidden" name="img3" value="">
+        <input type="file" class="form-control filefield" id="img3" style="display: none">
+    </div>
+
+    <button type="button" class="btn btn-primary" onclick="doUpload()">Submit</button>
+</form>
+
+<script>
+    $('.select-file').click(function(event){
+       //alert($(this).attr('data-target'));
+        var id = $(this).attr('data-target')
+        $('#' + id).click();
+
+
+    });
+
+    $('.filefield').change(function(event){
+        console.log($(this));
+    });
+
+
+
+
+</script>

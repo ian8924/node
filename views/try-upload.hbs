@@ -1,0 +1,33 @@
+<img src="" alt="" id="myimg">
+
+<form name="form1" method="post" enctype="multipart/form-data" onsubmit="return false;">
+    <div class="form-group">
+        <label for="name">name</label>
+        <input type="text" class="form-control" id="name" name="name">
+    </div>
+    <div class="form-group">
+        <label for="avatar">Password</label>
+        <input type="file" class="form-control" id="avatar" name="avatar">
+    </div>
+
+    <button type="button" class="btn btn-primary" onclick="doUpload()">Submit</button>
+</form>
+
+<script>
+    function doUpload(){
+        var fd = new FormData(document.form1);
+
+        fetch('/try-upload', {
+            method: 'POST',
+            body: fd
+
+        })
+        .then(res=>res.json())
+        .then(obj=>{
+            console.log(obj);
+            if(obj.file){
+                $('#myimg').attr('src', obj.file );
+            }
+        });
+    }
+</script>

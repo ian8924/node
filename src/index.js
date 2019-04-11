@@ -4,6 +4,8 @@ const url = require('url');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const multer = require('multer');
+const fs=require('fs');
+const uuidv4 = require('uuid/v4');
 
 //const bodyParserUrlencoded = bodyParser.urlencoded({extended: false});
 
@@ -78,6 +80,83 @@ app.post('/post-echo2', (req, res)=>{
 app.get('/abc.html', (req, res)=>{
     res.send('ABC');
 });
+
+app.get('/try-upload', (req, res)=>{
+    res.render('try-upload');
+});
+
+app.post('/try-upload', upload.single('avatar'), (req, res)=>{
+    console.log(req.file);
+
+    let ext = '';
+    let fname = uuidv4();
+
+    if(req.file && req.file.originalname){
+        switch(req.file.mimetype){          //判斷是哪種類型的檔案
+            case 'image/png':
+                ext = '.png';
+            case 'image/jpeg':
+                if(!ext){
+                    ext = '.jpg';
+                }
+
+                fs.createReadStream(req.file.path)
+                    .pipe(fs.createWriteStream(__dirname + '/../public/img/' + fname + ext));
+
+                res.json({
+                    success: true,
+                    file: '/img/' + fname + ext,
+                    name: req.body.name
+                });
+                return;
+        }
+    }
+    res.json({
+        success: false,
+        file: '',
+        name: req.body.name
+    });
+
+});
+app.get('/upload-form1', (req, res)=>{
+    res.render('upload-form1');
+});
+
+app.post('/upload-single', upload.single('filefield'), (req, res)=>{
+    let ext = '';
+    let fname = uuidv4();
+    const result = {
+        success: false,
+        info: '',
+        file: ''
+    };
+
+    if(req.file && req.file.originalname){
+        switch(req.file.mimetype){
+            case 'image/png':
+                ext = '.png';
+            case 'image/jpeg':
+                if(!ext){
+                    ext = '.jpg';
+                }
+
+                fs.createReadStream(req.file.path)
+                    .pipe(fs.createWriteStream(__dirname + '/../public/img/' + fname + ext));
+
+                res.json({
+                    success: true,
+                    file: '/img/' + fname + ext,
+                });
+                return;
+            default:
+                result.info = '檔案格式不符';
+        }
+    } else {
+        result.info = '沒有選擇檔案';
+    }
+    res.json(result);
+});
+
 
 app.use((req, res)=>{
     res.type('text/html');
