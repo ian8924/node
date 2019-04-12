@@ -4,22 +4,22 @@
     <div class="form-group">
         <label for="">img1</label>
         <button class="btn btn-primary select-file" data-target="img1">請選擇檔案</button>
-        <img src="" alt="" id="myimg1">
+        <img src="" alt="" id="myimg1" width="200px">
         <input type="hidden" name="img1" value="">
         <input type="file" class="form-control filefield" id="img1" style="display: none">
     </div>
     <div class="form-group">
         <label for="">img2</label>
-        <button class="btn btn-primary select-file" data-target="img2">請選擇檔案</button>
-        <img src="" alt="" id="myimg2">
+        <button class="btn btn-primary select-file" data-target="img2" >請選擇檔案</button>
+        <img src="" alt="" id="myimg2" width="200px">
         <input type="hidden" name="img2" value="">
-        <input type="file" class="form-control filefield" id="img2" style="display: none">
+        <input type="file" class="form-control filefield" id="img2" style="display: none"multiple="multiple">
     </div>
 
     <div class="form-group">
         <label for="">img3</label>
         <button class="btn btn-primary select-file" data-target="img3">請選擇檔案</button>
-        <img src="" alt="" id="myimg3">
+        <img src="" alt="" id="myimg3" width="200px">
         <input type="hidden" name="img3" value="">
         <input type="file" class="form-control filefield" id="img3" style="display: none">
     </div>
@@ -30,14 +30,30 @@
 <script>
     $('.select-file').click(function(event){
        //alert($(this).attr('data-target'));
-        var id = $(this).attr('data-target')
-        $('#' + id).click();
-
-
+        var id = $(this).attr('data-target');
+        $('#' + id).click(); //點擊檔案欄位
     });
 
     $('.filefield').change(function(event){
-        console.log($(this));
+        // console.log(this.files[0]);
+        var me = $(this);
+        var fd = new FormData();
+
+        fd.append('filefield', this.files[0])
+
+        fetch('/upload-single', {
+            method: 'POST',
+            body: fd
+        })
+        .then(res=>res.json())
+        .then(obj=>{
+            console.log(obj);
+            if(obj.success){
+                //$('#myimg').attr('src', obj.file );
+                me.closest('.form-group').find('img').attr('src', obj.file);
+                me.closest('.form-group').find('input').eq(0).val(obj.file);
+            }
+        });
     });
 
 

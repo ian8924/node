@@ -6,6 +6,7 @@ const cors = require('cors');
 const multer = require('multer');
 const fs=require('fs');
 const uuidv4 = require('uuid/v4');
+const session= require('express-session');
 
 //const bodyParserUrlencoded = bodyParser.urlencoded({extended: false});
 
@@ -156,6 +157,61 @@ app.post('/upload-single', upload.single('filefield'), (req, res)=>{
     }
     res.json(result);
 });
+
+const params1 = require(__dirname + '/params-test/params');
+params1(app);
+
+// app.get('/my-params1/:action/:id', (req, res)=>{    
+//     res.json(req.params);
+// });
+// app.get('/my-params2/:action?/:id?', (req, res)=>{    
+//     res.json(req.params);
+
+// });
+     
+// app.get('/my-params3/*/*?', (req, res)=>{
+//     res.json(req.params);
+// });
+
+const mr = require(__dirname + '/mobile_router');  //localhost:3000/09xx-xxx-xxx
+app.use(mr);
+
+
+const mr3 = require(__dirname + '/mobile_router3'); //一樣但用法不同 localhost:3000/mobile/09xx-xxx-xxx
+app.use('/mobile', mr3);
+    
+// app.get(/^\/09\d{2}\-?\d{3}\-?\d{3}/, (req, res)=>{    
+//     let str = req.url.slice(1);    
+//     str = str.split('-').join('');    
+//     res.send('手機: ' + str);}
+// );
+
+
+const admin3 = require(__dirname + '/admin3');
+app.use('/admin3', admin3);
+
+app.use(session({    
+    saveUninitialized: false, 
+    // 新 session 未變更內容是否儲存    
+    resave: false, 
+    // 沒變更內容是否強制回存    
+    secret: 'pass',    
+    cookie: {        
+        maxAge: 5000, 
+        // 1分鐘，單位毫秒 進入網頁後幾秒登出    
+}})
+);
+
+app.get('/try-session', (req, res)=>{    
+    req.session.views = req.session.views || 0; 
+    // 預設為 0    
+    req.session.views++;
+        
+    res.contentType('text/plain');    
+    res.write('拜訪次數:' + req.session.views + "\n");    
+    res.end(JSON.stringify(req.session));
+});
+
 
 
 app.use((req, res)=>{
