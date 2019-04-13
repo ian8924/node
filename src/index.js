@@ -9,6 +9,10 @@ const uuidv4 = require('uuid/v4');
 const session= require('express-session');
 const moment =require('moment-timezone');
 const mysql = require('mysql');
+const bluebird = require('bluebird');
+const axios = require('axios');
+
+
 
 const db = mysql.createConnection({
    host: 'localhost',
@@ -17,6 +21,8 @@ const db = mysql.createConnection({
    database: 'proj54'
 });
 db.connect();
+
+bluebird.promisifyAll(db);
 
 //const bodyParserUrlencoded = bodyParser.urlencoded({extended: false});
 
@@ -32,7 +38,7 @@ app.use(bodyParser.urlencoded({extended: false}));
 // 查看 HTTP HEADER 的 Content-Type: application/json
 app.use(bodyParser.json());
 
-var whitelist = ['http://localhost:8080', 'http://192.168.27.27:8080',undefined] //設定白名單給8080 
+var whitelist = ['http://localhost:8080', 'http://192.168.27.27:8080',undefined,'http://localhost:3000'] //設定白名單給8080 
 var corsOptions = {
     credentials: true, // session 的預設值
     origin: function (origin, callback) {
@@ -280,6 +286,96 @@ app.get('/try-moment', (req, res)=>{
             sales: results
         });
     });
+});
+
+app.get('/sales3/add', (req, res)=>{
+    res.render('sales3-add');
+});
+
+app.post('/sales3/add', (req, res)=>{
+    const data = {
+        success: false,
+        message: {
+            type: 'danger',
+            text: ''
+        }
+    };
+    const body = req.body;
+    data.body = body;
+    if(! body.sales_id || ! body.name || ! body.birthday){
+        data.message.text = '資料不足';
+        res.render('sales3-add', data);
+        return;
+    }
+
+
+  
+    db.queryAsync("INSERT INTO `sales` SET ?", body) //install bluebird 後可以用 queryAsync .then
+        .then(results=>{
+            if(results.affectedRows===1){
+                return db.queryAsync("INSERT INTO `sales` SET ?", {
+                    name: 'test',
+                    sales_id: 'Hello-' + results.insertId,
+                    birthday: '2000-02-02'
+                })
+            }
+        })
+        .then(results=>{   //如果第一筆出錯 直接跳到catch 但第二筆不會執行 ;第二筆出錯 第一筆會執行但第二筆不會執行
+            console.log(results);
+            if(results.affectedRows===1){
+                data.success = true;
+                data.message.type = 'success';
+                data.message.text = '新增成功';
+            } else {
+                data.message.text = '資料沒有新增';
+            }
+            
+            res.render('sales3-add', data);
+        })
+        
+        .catch(error=>{
+
+        });
+    // db.query("INSERT INTO `sales` (`sales_id`, `name`, `birthday`) VALUES (?, ?, ?)",
+    //     [body.sales_id, body.name, body.birthday],
+    //     (error, results, fields)=>{
+    //         console.log(results);
+    //         if(error){
+    //             data.message.text = '資料沒有新增';
+    //         } else {
+    //             data.success = true;
+    //             data.message.type = 'success';
+    //             data.message.text = '新增成功';
+    //         }
+
+    //         res.render('sales3-add', data);
+    //     });
+
+    // let query = db.query("INSERT INTO `sales` SET ?",  //資料必須與欄位相同
+    // body,
+    // (error, results, fields)=>{
+    //     console.log(results);
+    //     if(error){
+    //         data.message.text = '資料沒有新增';
+    //     } else {
+    //         data.success = true;
+    //         data.message.type = 'success';
+    //         data.message.text = '新增成功';
+    //     }
+
+    //     res.render('sales3-add', data);
+    // });
+    //     console.log(query.sql);
+});
+
+app.get('/try-axios', (req, res)=>{
+
+    axios.get('https://tw.yahoo.com/')
+        .then(response=>{
+            console.log(response);
+            res.send(response.data);
+        })
+
 });
 
 app.use((req, res)=>{
