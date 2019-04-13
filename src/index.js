@@ -7,6 +7,16 @@ const multer = require('multer');
 const fs=require('fs');
 const uuidv4 = require('uuid/v4');
 const session= require('express-session');
+const moment =require('moment-timezone');
+const mysql = require('mysql');
+
+const db = mysql.createConnection({
+   host: 'localhost',
+   user: 'root',
+   password: '',
+   database: 'proj54'
+});
+db.connect();
 
 //const bodyParserUrlencoded = bodyParser.urlencoded({extended: false});
 
@@ -22,7 +32,22 @@ app.use(bodyParser.urlencoded({extended: false}));
 // 查看 HTTP HEADER 的 Content-Type: application/json
 app.use(bodyParser.json());
 
-app.use(cors());
+var whitelist = ['http://localhost:8080', 'http://192.168.27.27:8080',undefined] //設定白名單給8080 
+var corsOptions = {
+    credentials: true, // session 的預設值
+    origin: function (origin, callback) {
+        if (whitelist.indexOf(origin) !== -1) {
+            callback(null, true)
+        } else {
+            callback(new Error('Not allowed by CORS'))
+        }
+    }
+};
+
+// app.use(cors());
+
+app.use(cors(corsOptions));
+
 
 const upload=multer({dest:'tmp_uploads/'});
 
@@ -197,7 +222,7 @@ app.use(session({
     // 沒變更內容是否強制回存    
     secret: 'pass',    
     cookie: {        
-        maxAge: 5000, 
+        maxAge: 50000, 
         // 1分鐘，單位毫秒 進入網頁後幾秒登出    
 }})
 );
@@ -207,12 +232,55 @@ app.get('/try-session', (req, res)=>{
     // 預設為 0    
     req.session.views++;
         
+    res.json({
+        views: req.session.views
+    })
     res.contentType('text/plain');    
     res.write('拜訪次數:' + req.session.views + "\n");    
     res.end(JSON.stringify(req.session));
 });
 
 
+app.post('/try-session', (req, res)=>{
+    req.session.views = req.session.views || 0;
+    req.session.views ++;
+
+    res.json({
+        views: req.session.views,
+        body: req.body
+    })
+});
+
+app.get('/try-moment', (req, res)=>{
+    const fm = 'YYYY-MM-DD HH:mm:ss';
+    const exp = req.session.cookie.expires;
+    const mo1 = moment(exp);
+    const mo2 = moment();
+
+    let out = '';
+
+    res.contentType('text/plain');
+
+    out += mo1.format(fm) + "\n";
+    out += mo2.format(fm) + "\n";
+    out += mo1.tz('Europe/London').format(fm) + "\n";
+    out += mo2.tz('Europe/London').format(fm) + "\n";
+   res.send(out);
+ });
+
+ app.get('/try-db', (req, res)=>{
+    let sql = "SELECT * FROM `sales`";
+    db.query(sql, (error, results, fields)=>{
+        //console.log(results);
+
+        for(let s in results){
+            results[s].birthday2 = moment(results[s].birthday).format('YYYY-MM-DD');
+        }
+        res.render('try-db', {
+            sales: results
+        });
+    });
+});
 
 app.use((req, res)=>{
     res.type('text/html');
